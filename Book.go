@@ -59,5 +59,5 @@ func main() {
 	rT.HandleFunc("/reload", handlersT.Reload).Methods("POST")
 	rT.HandleFunc("/code/{[]}", handlersT.SelectCountry).Methods("GET")
 	fmt.Println("starting server at :8080")
-	http.ListenAndServe(":8081", rT)
+	http.ListenAndServe(":8080", rT)
 }
