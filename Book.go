@@ -1,12 +1,15 @@
 package main
 
 import (
+	"Phonebook/data"
+	"Phonebook/handlers"
 	"flag"
 	"fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
 	"os"
+	"Phonebook/db"
 )
 
 func Usage() {
@@ -20,41 +23,43 @@ func main() {
 	flag.Usage = Usage
 	server := flag.String("s", "localhost", "serverDB")
 	port := flag.String("p", "5432", "port")
-	PostgresUser := flag.String("u", "", "Database user")
-	PostgresPassword := flag.String("pass", "", "DB password")
-	PostgresDB := flag.String("d","","Name Database")
+	PostgresUser := flag.String("u", "postgres", "Database user")
+	PostgresPassword := flag.String("pass", "admin", "DB password")
+	PostgresDB := flag.String("d","postgres","Name Database")
 
 	flag.Parse()
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", *PostgresUser, *PostgresPassword, *server, *port,*PostgresDB)
-	postgresrepo, err:=NewPostgresrepo(&dsn)
+	fmt.Println(dsn)
+	postgresrepo, err:=db.NewPostgresrepo(&dsn)
 	if err !=nil  {
 		fmt.Println("Error DB. Please check your connect for DB",err)
 		log.Fatal()
 	}
-	err = postgresrepo.db.Ping()
+	db.SetRepository(postgresrepo)
+	err = postgresrepo.Db.Ping()
 	if err !=nil  {
 		fmt.Println("Error DB. Please check your connect for DB",err)
 		log.Fatal()
 	}
-
 	postgresrepo.Create()
-	countryname,err := GetData(COUNTRYNAME)
+
+
+	datarepo := data.NewDataRepo()
+	err = datarepo.GetCountryName()
 	if err !=nil  {
 		fmt.Println("Source unreachable",err)
 	}
-	phonecode, err := GetData(PHONECODE)
+	err = datarepo.GetPhoneCode()
 	if err !=nil  {
 		fmt.Println("Source unreachable",err)
 	}
-	err = postgresrepo.Insert(countryname,phonecode)
+	err = db.Insert(*datarepo)
 
 	if err !=nil  {
 		fmt.Println("Error DB. Please check your connect for DB",err)
 	}
 
-	handlersT := NewHandlerT()
-	handlersT.GetConn(postgresrepo)
-
+	handlersT := handlers.NewHandlerT()
 	rT := mux.NewRouter()
 	rT.HandleFunc("/reload", handlersT.Reload).Methods("POST")
 	rT.HandleFunc("/code/{[]}", handlersT.SelectCountry).Methods("GET")

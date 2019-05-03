@@ -1,24 +1,19 @@
-package main
+package db
 
 import (
+	"Phonebook/data"
 	"database/sql"
 	"fmt"
 	"strings"
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
-
+	"Phonebook/schema"
 )
 
 type Postgresrepo struct {
-	db *sql.DB
+	Db *sql.DB
 }
 
-type productT struct {
-
-	CountryName string
-	PhoneCode string
-	CountryCode string
-}
 
 func NewPostgresrepo(dsn *string) (*Postgresrepo,error) {
 	db, err := sql.Open("postgres", *dsn)
@@ -31,15 +26,15 @@ func NewPostgresrepo(dsn *string) (*Postgresrepo,error) {
 }
 
 func (d *Postgresrepo) Close() {
-	d.db.Close()
+	d.Db.Close()
 }
 
 func (d Postgresrepo) Create() error {
-	_, err := d.db.Exec("DROP TABLE IF EXISTS PhoneBook;")
+	_, err := d.Db.Exec("DROP TABLE IF EXISTS PhoneBook;")
 	if err != nil {
 		return err
 	}
-	_, err = d.db.Exec(`
+	_, err = d.Db.Exec(`
 	CREATE TABLE PhoneBook (
 		CountryCode varchar(10) NOT NULL,
 		CountryName varchar(45) DEFAULT NULL,
@@ -52,10 +47,11 @@ func (d Postgresrepo) Create() error {
 	return nil
 }
 
-func (d Postgresrepo) Insert(country map[string]interface{},phone map[string]interface{}) error {
+func (db Postgresrepo) Insert(data data.DataRepo) error {
 	sqlStr := "INSERT INTO PhoneBook(CountryCode, CountryName, PhoneCode) VALUES ($1,$2,$3)"
-
-	tx, err:=d.db.Begin()
+	country := data.CountryName
+	phone := data.PhoneCode
+	tx, err:=db.Db.Begin()
 	for key, val := range country {
 		_,err = tx.Exec(sqlStr,key, fmt.Sprintf("%s",val), fmt.Sprintf("%s",phone[key]))
 		if err != nil {
@@ -66,28 +62,28 @@ func (d Postgresrepo) Insert(country map[string]interface{},phone map[string]int
 	return nil
 }
 
-func (d Postgresrepo) Reload (country map[string]interface{},phone map[string]interface{}) error  {
+func (d Postgresrepo) Reload (data data.DataRepo) error  {
 
-	_, err := d.db.Exec("truncate PhoneBook")
+	_, err := d.Db.Exec("truncate PhoneBook")
 	if err != nil {
 		return err
 	}
-	err = d.Insert(country,phone)
+	err = d.Insert(data)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (d Postgresrepo) Select (country string ) ([]productT,error) {
-	rows, err := d.db.Query("select * from PhoneBook where upper(CountryName)=$1 LIMIT 1", strings.ToUpper(country))
+func (d Postgresrepo) Select (country string ) ([]schema.PhoneEntity,error) {
+	rows, err := d.Db.Query("select * from PhoneBook where upper(CountryName)=$1 LIMIT 1", strings.ToUpper(country))
 	defer rows.Close()
 	if err != nil {
 		return nil,err
 	}
-	var products []productT
+	var products []schema.PhoneEntity
 	for rows.Next() {
-		p := productT{}
+		p := schema.PhoneEntity{}
 		err := rows.Scan(&p.CountryCode, &p.CountryName, &p.PhoneCode)
 		if err != nil {
 			return nil,err
