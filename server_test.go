@@ -1,23 +1,27 @@
 package main
 
 import (
+	"Phonebook/data"
+	"Phonebook/handlers"
 	"database/sql"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"Phonebook/schema"
+	"Phonebook/db"
 )
 
 type PostgresrepoTest struct {
 	DB *sql.DB
 }
 
-func (d PostgresrepoTest) Select (country string ) ([]productT,error) {
-	var products []productT
-	var p productT
+func (d PostgresrepoTest) Select (country string ) ([]schema.PhoneEntity,error) {
+	var products []schema.PhoneEntity
+	var p schema.PhoneEntity
 	if strings.ToUpper(country)== "JAMAICA" {
-		p = productT{
+		p = schema.PhoneEntity{
 			CountryName: "Jamaica",
 			PhoneCode:   "+1-876",
 		}
@@ -28,11 +32,11 @@ func (d PostgresrepoTest) Select (country string ) ([]productT,error) {
 	return products,nil
 }
 
-func (d PostgresrepoTest) Reload (map[string]interface{},map[string]interface{}) error {
+func (d PostgresrepoTest) Reload (repo data.DataRepo) error {
 	return nil
 }
 
-func (d PostgresrepoTest) Insert(map[string]interface{},map[string]interface{}) error {
+func (d PostgresrepoTest) Insert(repo data.DataRepo) error {
 	return nil
 }
 
@@ -83,8 +87,8 @@ func TestSelectCountry(t *testing.T) {
 
 	}
 	postgresrepoTest := NewPostgresrepoTest()
-	h := NewHandlerT()
-	h.Postgresrepo=postgresrepoTest
+	h := handlers.NewHandlerT()
+	db.SetRepository(postgresrepoTest)
 
 	for _,val := range item {
 

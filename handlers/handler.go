@@ -1,20 +1,15 @@
-package main
+package handlers
 
 import (
+	"Phonebook/data"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
+	"Phonebook/db"
 )
 
 type HandlerT struct {
-	Postgresrepo Conn
-}
-
-type Conn interface {
-	Create() error
-	Reload (map[string]interface{},map[string]interface{}) error
-	Select(country string ) ([]productT,error)
-	Insert(map[string]interface{},map[string]interface{}) error
 }
 
 func NewHandlerT() *HandlerT  {
@@ -22,30 +17,26 @@ func NewHandlerT() *HandlerT  {
 	}
 }
 
-func (h *HandlerT) GetConn (d *Postgresrepo) *HandlerT {
-	h.Postgresrepo = *d
-	return h
-}
-
 func (h HandlerT) Reload (w http.ResponseWriter, r *http.Request) {
-	countryname,err := GetData(COUNTRYNAME)
+	datarepo := data.NewDataRepo()
+	err := datarepo.GetCountryName()
 	if err !=nil  {
-		panic(err)
+		fmt.Println("Source unreachable",err)
 	}
-	phonecode, err := GetData(PHONECODE)
+	err = datarepo.GetPhoneCode()
 	if err !=nil  {
-		panic(err)
+		fmt.Println("Source unreachable",err)
 	}
-	err=h.Postgresrepo.Reload(countryname,phonecode)
+	err=db.Reload(*datarepo)
 	if err != nil {
-
+		fmt.Println("DB Error",err)
 	}
 }
 
 func (h HandlerT) SelectCountry(w http.ResponseWriter, r *http.Request) {
 	country:=strings.TrimLeft(r.URL.String(),"/code/")
 
-	rows, err :=h.Postgresrepo.Select(country)
+	rows, err :=db.Select(country)
 	if err != nil {
 
 	}

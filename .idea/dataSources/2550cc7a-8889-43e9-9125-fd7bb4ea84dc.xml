@@ -89,8 +89,8 @@
       <ObjectId>2200</ObjectId>
       <Comment>standard public schema</Comment>
       <Owner>postgres</Owner>
-      <IntrospectionTimestamp>2019-04-29.09:30:07.960</IntrospectionTimestamp>
-      <IntrospectionStateNumber>20622</IntrospectionStateNumber>
+      <IntrospectionTimestamp>2019-05-03.19:50:47.653</IntrospectionTimestamp>
+      <IntrospectionStateNumber>13817</IntrospectionStateNumber>
       <Current>1</Current>
       <Visible>1</Visible>
     </schema>
@@ -146,159 +146,122 @@
       <Owner>postgres</Owner>
       <StateNumber>575</StateNumber>
     </table>
-    <table id="26" parent="17" name="phonebook">
-      <ObjectId>16760</ObjectId>
-      <Owner>postgres</Owner>
-      <StateNumber>20622</StateNumber>
-    </table>
-    <table id="27" parent="17" name="send_messages">
+    <table id="26" parent="17" name="send_messages">
       <ObjectId>16417</ObjectId>
       <Comment>history send messages</Comment>
       <Owner>postgres</Owner>
       <StateNumber>7202</StateNumber>
     </table>
-    <column id="28" parent="24" name="id">
+    <column id="27" parent="24" name="id">
       <Position>1</Position>
       <DataType>numeric|0s</DataType>
       <StateNumber>576</StateNumber>
       <TypeId>1700</TypeId>
     </column>
-    <column id="29" parent="24" name="firstname">
+    <column id="28" parent="24" name="firstname">
       <Position>2</Position>
       <DataType>varchar(150)|0s</DataType>
       <StateNumber>576</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="30" parent="24" name="lastname">
+    <column id="29" parent="24" name="lastname">
       <Position>3</Position>
       <DataType>varchar(150)|0s</DataType>
       <StateNumber>576</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="31" parent="24" name="sex">
+    <column id="30" parent="24" name="sex">
       <Position>4</Position>
       <DataType>numeric|0s</DataType>
       <StateNumber>576</StateNumber>
       <TypeId>1700</TypeId>
     </column>
-    <column id="32" parent="24" name="bdate">
+    <column id="31" parent="24" name="bdate">
       <Position>5</Position>
       <DataType>varchar(150)|0s</DataType>
       <StateNumber>576</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="33" parent="24" name="city_id">
+    <column id="32" parent="24" name="city_id">
       <Position>6</Position>
       <DataType>integer|0s</DataType>
       <StateNumber>3887</StateNumber>
       <TypeId>23</TypeId>
     </column>
-    <column id="34" parent="24" name="city_title">
+    <column id="33" parent="24" name="city_title">
       <Position>7</Position>
       <DataType>varchar(30)|0s</DataType>
       <StateNumber>3888</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="35" parent="24" name="is_allowed">
+    <column id="34" parent="24" name="is_allowed">
       <Position>8</Position>
       <DataType>integer|0s</DataType>
       <StateNumber>13817</StateNumber>
       <TypeId>23</TypeId>
     </column>
-    <column id="36" parent="25" name="id">
+    <column id="35" parent="25" name="id">
       <Position>1</Position>
       <DataType>numeric|0s</DataType>
       <StateNumber>575</StateNumber>
       <TypeId>1700</TypeId>
     </column>
-    <column id="37" parent="25" name="name">
+    <column id="36" parent="25" name="name">
       <Position>2</Position>
       <DataType>varchar(150)|0s</DataType>
       <StateNumber>575</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="38" parent="25" name="is_closed">
+    <column id="37" parent="25" name="is_closed">
       <Position>3</Position>
       <DataType>integer|0s</DataType>
       <StateNumber>575</StateNumber>
       <TypeId>23</TypeId>
     </column>
-    <column id="39" parent="25" name="activity">
+    <column id="38" parent="25" name="activity">
       <Position>4</Position>
       <DataType>varchar(20)|0s</DataType>
       <StateNumber>575</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="40" parent="25" name="status">
+    <column id="39" parent="25" name="status">
       <Position>5</Position>
       <DataType>varchar(50)|0s</DataType>
       <StateNumber>575</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="41" parent="25" name="description">
+    <column id="40" parent="25" name="description">
       <Position>6</Position>
       <DataType>varchar(4000)|0s</DataType>
       <StateNumber>575</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="42" parent="25" name="members_count">
+    <column id="41" parent="25" name="members_count">
       <Position>7</Position>
       <DataType>numeric|0s</DataType>
       <StateNumber>575</StateNumber>
       <TypeId>1700</TypeId>
     </column>
-    <column id="43" parent="26" name="countrycode">
-      <Position>1</Position>
-      <DataType>varchar(10)|0s</DataType>
-      <NotNull>1</NotNull>
-      <StateNumber>20622</StateNumber>
-      <TypeId>1043</TypeId>
-    </column>
-    <column id="44" parent="26" name="countryname">
-      <Position>2</Position>
-      <DataType>varchar(45)|0s</DataType>
-      <StateNumber>20622</StateNumber>
-      <DefaultExpression>NULL::character varying</DefaultExpression>
-      <TypeId>1043</TypeId>
-    </column>
-    <column id="45" parent="26" name="phonecode">
-      <Position>3</Position>
-      <DataType>varchar(45)|0s</DataType>
-      <StateNumber>20622</StateNumber>
-      <DefaultExpression>NULL::character varying</DefaultExpression>
-      <TypeId>1043</TypeId>
-    </column>
-    <index id="46" parent="26" name="phonebook_pkey">
-      <ObjectId>16765</ObjectId>
-      <ColNames>countrycode</ColNames>
-      <Unique>1</Unique>
-    </index>
-    <key id="47" parent="26" name="phonebook_pkey">
-      <ObjectId>16766</ObjectId>
-      <ColNames>countrycode</ColNames>
-      <UnderlyingIndexName>phonebook_pkey</UnderlyingIndexName>
-      <Primary>1</Primary>
-    </key>
-    <column id="48" parent="27" name="id_user">
+    <column id="42" parent="26" name="id_user">
       <Position>1</Position>
       <DataType>numeric|0s</DataType>
       <NotNull>1</NotNull>
       <StateNumber>577</StateNumber>
       <TypeId>1700</TypeId>
     </column>
-    <column id="49" parent="27" name="status">
+    <column id="43" parent="26" name="status">
       <Position>2</Position>
       <DataType>varchar(20)|0s</DataType>
       <StateNumber>577</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="50" parent="27" name="text">
+    <column id="44" parent="26" name="text">
       <Position>3</Position>
       <DataType>varchar(4000)|0s</DataType>
       <StateNumber>577</StateNumber>
       <TypeId>1043</TypeId>
     </column>
-    <column id="51" parent="27" name="data">
+    <column id="45" parent="26" name="data">
       <Position>4</Position>
       <DataType>timestamp|0s</DataType>
       <StateNumber>7202</StateNumber>
