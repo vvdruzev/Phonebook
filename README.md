@@ -1,7 +1,7 @@
 # Phonebook
 
 Сборка:
-go build Book.go getCountry.go handler.go postgres.go.
+go build Book.go 
 
 Параметы запуска:  Book.exe --help
 
@@ -28,4 +28,4 @@ Book.exe -s localhost -p 5432 -d postgres -u dbuser -pass dbpassword.
 
 Запуск тестов:
 
-go test -v server_test.go Book.go handler.go getCountry.go postgres.go
+go test -v server_test.go 
