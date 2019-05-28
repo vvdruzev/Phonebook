@@ -25,7 +25,6 @@ curl -X POST <ip-container>:8080/reload
 
 docker logs -f phonebook_book_1
 
-
 Запуск тестов:
 
 go test -v server_test.go 
