@@ -4,7 +4,14 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"log"
+	"time"
+	"fmt"
+	"Phonebook/logger"
 )
+
+
 
 type DataRepo struct {
 	PhoneCode map[string]interface{}
@@ -14,15 +21,52 @@ type DataRepo struct {
 func NewDataRepo() *DataRepo  {
 	return &DataRepo{}
 }
+
+type ResourceError struct {
+	URL string
+	Err error
+}
+
+
+func (re *ResourceError) Error() string {
+	return fmt.Sprintf(
+		"Resource error: URL: %s, err: %v",
+		re.URL,
+		re.Err,
+	)
+}
+var client http.Client
+
+func SetClient(proxy string)  {
+	if proxy =="" {
+		client = http.Client{}
+	}else {
+		proxyURL, err := url.Parse(proxy)
+		if err != nil {
+			log.Println(err)
+		}
+
+		transport := &http.Transport{
+			Proxy: http.ProxyURL(proxyURL),
+		}
+
+		client = http.Client{
+			Transport: transport,
+			Timeout:   time.Second * 1,
+		}
+	}
+}
+
 func (d *DataRepo)  GetPhoneCode() (error) {
 	url:="http://country.io/phone.json"
-	resp, err := http.Get(url)
+	logger.Info("Getting data from ", url)
+	resp, err := client.Get(url)
 	if err != nil {
-		return err
+		return &ResourceError{URL: url, Err: err}
 	}
 	if resp.StatusCode != http.StatusOK {
 		resp.Body.Close()
-		return err
+		return &ResourceError{URL: url, Err: err}
 	}
 	b, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
@@ -41,13 +85,14 @@ func (d *DataRepo)  GetPhoneCode() (error) {
 
 func (d *DataRepo) GetCountryName()  error  {
 	url:="http://country.io/names.json"
-	resp, err := http.Get(url)
+	logger.Info("Getting data from ", url)
+	resp, err := client.Get(url)
 	if err != nil {
-		return err
+		return &ResourceError{URL: url, Err: err}
 	}
 	if resp.StatusCode != http.StatusOK {
 		resp.Body.Close()
-		return err
+		return &ResourceError{URL: url, Err: err}
 	}
 	b, err := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()

@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
-	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
 	"Phonebook/schema"
 )
@@ -25,26 +24,23 @@ func NewPostgresrepo(dsn *string) (*Postgresrepo,error) {
 	}, nil
 }
 
-func (d *Postgresrepo) Close() {
-	d.Db.Close()
+
+type dbError struct {
+	method string
+	Err error
 }
 
-func (d Postgresrepo) Create() error {
-	_, err := d.Db.Exec("DROP TABLE IF EXISTS PhoneBook;")
-	if err != nil {
-		return err
-	}
-	_, err = d.Db.Exec(`
-	CREATE TABLE PhoneBook (
-		CountryCode varchar(10) NOT NULL,
-		CountryName varchar(45) DEFAULT NULL,
-		PhoneCode varchar(45) DEFAULT NULL,
-		PRIMARY KEY (CountryCode));`)
-	if err != nil {
-		return err
 
-	}
-	return nil
+func (re *dbError) Error() string {
+	return fmt.Sprintf(
+		"DB error:  %s, err: %v",
+		re.method,
+		re.Err,
+	)
+}
+
+func (db Postgresrepo) Close() {
+	db.Db.Close()
 }
 
 func (db Postgresrepo) Insert(data data.DataRepo) error {
@@ -55,7 +51,7 @@ func (db Postgresrepo) Insert(data data.DataRepo) error {
 	for key, val := range country {
 		_,err = tx.Exec(sqlStr,key, fmt.Sprintf("%s",val), fmt.Sprintf("%s",phone[key]))
 		if err != nil {
-			return err
+			return &dbError{method: sqlStr, Err: err}
 		}
 	}
 	tx.Commit()
@@ -75,21 +71,16 @@ func (d Postgresrepo) Reload (data data.DataRepo) error  {
 	return nil
 }
 
-func (d Postgresrepo) Select (country string ) ([]schema.PhoneEntity,error) {
-	rows, err := d.Db.Query("select * from PhoneBook where upper(CountryName)=$1 LIMIT 1", strings.ToUpper(country))
-	defer rows.Close()
-	if err != nil {
-		return nil,err
-	}
-	var products []schema.PhoneEntity
-	for rows.Next() {
-		p := schema.PhoneEntity{}
-		err := rows.Scan(&p.CountryCode, &p.CountryName, &p.PhoneCode)
-		if err != nil {
-			return nil,err
-		}
-		products = append(products, p)
+func (d Postgresrepo) Select (country string ) (schema.ResponseCode,error) {
+	sqlStr := "select PhoneCode from PhoneBook where upper(CountryName)=$1 LIMIT 1"
+	rows:= d.Db.QueryRow(sqlStr, strings.ToUpper(country))
+	p := schema.ResponseCode{}
+	err := rows.Scan(&p.PhoneCode)
+	if err == sql.ErrNoRows {
+		return p, &dbError{method: "Not found", Err: err}
+	} else if err != nil {
+		return 	p, &dbError{method: sqlStr, Err: err}
 	}
 
-	return products,nil
+	return p,nil
 }

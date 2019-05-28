@@ -3,66 +3,69 @@ package main
 import (
 	"Phonebook/data"
 	"Phonebook/handlers"
-	"flag"
-	"fmt"
+	"Phonebook/db"
+
 	"github.com/gorilla/mux"
+	"github.com/kelseyhightower/envconfig"
+
+	"fmt"
 	"log"
 	"net/http"
-	"os"
-	"Phonebook/db"
+	"time"
+	"Phonebook/logger"
 )
 
-func Usage() {
-	fmt.Fprint(os.Stderr, "Usage of ", os.Args[0], ":\n")
-	flag.PrintDefaults()
-	fmt.Fprint(os.Stderr, "\n")
+
+type Config struct {
+	PostgresDB           string `envconfig:"POSTGRES_DB"`
+	PostgresUser         string `envconfig:"POSTGRES_USER"`
+	PostgresPassword     string `envconfig:"POSTGRES_PASSWORD"`
+	ProxyUrl			 string `envconfig:"HTTP_PROXY"`
 }
 
-func main() {
-	// основные настройки к базе
-	flag.Usage = Usage
-	server := flag.String("s", "localhost", "serverDB")
-	port := flag.String("p", "5432", "port")
-	PostgresUser := flag.String("u", "postgres", "Database user")
-	PostgresPassword := flag.String("pass", "admin", "DB password")
-	PostgresDB := flag.String("d","postgres","Name Database")
 
-	flag.Parse()
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", *PostgresUser, *PostgresPassword, *server, *port,*PostgresDB)
-	fmt.Println(dsn)
+
+func main() {
+	logger.NewLogger()
+	// основные настройки к базе
+	var cfg Config
+	err := envconfig.Process("", &cfg)
+	if err != nil {
+		logger.Error(err)
+		log.Fatal(err)
+	}
+
+
+	dsn := fmt.Sprintf("postgres://%s:%s@localhost/%s?sslmode=disable",cfg.PostgresUser, cfg.PostgresPassword , cfg.PostgresDB)
 	postgresrepo, err:=db.NewPostgresrepo(&dsn)
 	if err !=nil  {
-		fmt.Println("Error DB. Please check your connect for DB",err)
+		logger.Error("Error DB. Please check your connect for DB",err,dsn)
 		log.Fatal()
 	}
-	db.SetRepository(postgresrepo)
-	err = postgresrepo.Db.Ping()
-	if err !=nil  {
-		fmt.Println("Error DB. Please check your connect for DB",err)
+	for {
+		db.SetRepository(postgresrepo)
+		err = postgresrepo.Db.Ping()
+		if err != nil {
+			logger.Error("Error DB. Please check your connect for DB",err,dsn)
+			time.Sleep(1000)
+		}else {
+			break
+		}
+	}
+	if err != nil {
+		logger.Error("Error DB. Please check your connect for DB",err,dsn)
 		log.Fatal()
 	}
-	postgresrepo.Create()
 
+	defer db.Close()
 
-	datarepo := data.NewDataRepo()
-	err = datarepo.GetCountryName()
-	if err !=nil  {
-		fmt.Println("Source unreachable",err)
-	}
-	err = datarepo.GetPhoneCode()
-	if err !=nil  {
-		fmt.Println("Source unreachable",err)
-	}
-	err = db.Insert(*datarepo)
-
-	if err !=nil  {
-		fmt.Println("Error DB. Please check your connect for DB",err)
-	}
-
+	logger.Info("Connect to DB ",cfg.PostgresDB, ", user " , cfg.PostgresUser)
+	data.SetClient(cfg.ProxyUrl)
+	logger.Debug("Set proxy:", cfg.ProxyUrl)
 	handlersT := handlers.NewHandlerT()
 	rT := mux.NewRouter()
 	rT.HandleFunc("/reload", handlersT.Reload).Methods("POST")
-	rT.HandleFunc("/code/{[]}", handlersT.SelectCountry).Methods("GET")
-	fmt.Println("starting server at :8080")
+	rT.HandleFunc("/code/{country}", handlersT.SelectCountry).Methods("GET")
+	logger.Info("starting server at :8080")
 	http.ListenAndServe(":8080", rT)
 }
