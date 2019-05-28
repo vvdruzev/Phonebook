@@ -2,11 +2,11 @@ package handlers
 
 import (
 	"Phonebook/data"
-	"fmt"
-	"io"
 	"net/http"
-	"strings"
 	"Phonebook/db"
+	"Phonebook/util"
+	"github.com/gorilla/mux"
+	"Phonebook/logger"
 )
 
 type HandlerT struct {
@@ -19,39 +19,32 @@ func NewHandlerT() *HandlerT  {
 
 func (h HandlerT) Reload (w http.ResponseWriter, r *http.Request) {
 	datarepo := data.NewDataRepo()
+	logger.Info("Reload data")
 	err := datarepo.GetCountryName()
 	if err !=nil  {
-		fmt.Println("Source unreachable",err)
+		logger.Error("Source unreachable ",err)
 	}
 	err = datarepo.GetPhoneCode()
 	if err !=nil  {
-		fmt.Println("Source unreachable",err)
+		logger.Error("Source unreachable ",err)
 	}
+	logger.Info("insert data in DB")
 	err=db.Reload(*datarepo)
 	if err != nil {
-		fmt.Println("DB Error",err)
+		logger.Error("Error connect to DB",err)
 	}
 }
 
 func (h HandlerT) SelectCountry(w http.ResponseWriter, r *http.Request) {
-	country:=strings.TrimLeft(r.URL.String(),"/code/")
-
+	vars := mux.Vars(r)
+	country := vars["country"]
+	logger.Info("Select Country ",country)
 	rows, err :=db.Select(country)
 	if err != nil {
-
-	}
-	if rows==nil {
-		w.WriteHeader(http.StatusNotFound)
-		w.Header().Set("Content-Type", "application/json")
-		io.WriteString(w, "404 page not found")
+		logger.Error(err)
+		util.ResponseError(w,http.StatusNotFound,"404 page not found")
 		return
 	}
-	w.WriteHeader(http.StatusOK)
-	res := "{"
-	for _,val:= range rows{
-		res += "\"" + val.CountryName +"\": \""+ val.PhoneCode +"\","
-	}
-	res = strings.TrimRight(res,",")+ "}"
-	w.Header().Set("Content-Type", "application/json")
-	io.WriteString(w, res)
+	util.ResponseOk(w,rows)
+	logger.Debug("Found Country ",country)
 }

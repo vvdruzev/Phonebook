@@ -6,9 +6,9 @@ import (
 )
 
 type Repository interface {
-	Create() error
+	Close()
 	Reload (repo data.DataRepo) error
-	Select(country string ) ([]schema.PhoneEntity,error)
+	Select(country string ) (schema.ResponseCode,error)
 	Insert(repo data.DataRepo) error
 
 }
@@ -20,14 +20,14 @@ func SetRepository(repository Repository) {
 }
 
 func Close() {
-	impl.Create()
+	impl.Close()
 }
 
 func Reload(repo data.DataRepo) error  {
 	return impl.Reload(repo)
 }
 
-func Select(country string ) ([]schema.PhoneEntity,error)  {
+func Select(country string ) (schema.ResponseCode,error)  {
 	return impl.Select(country)
 }
 

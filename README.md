@@ -1,27 +1,31 @@
 # Phonebook
 
-Сборка:
-go build Book.go getCountry.go handler.go postgres.go.
+Сборка :
 
-Параметы запуска:  Book.exe --help
+sudo docker-compose up -d --build
 
-Usage of Book.exe:
 
-  -d    Name Database
-  
-  -p    port (default "5432")
-  
-  -pass DB password
-  
-  -s    serverDB (default "localhost")
-  
-  -u    Database user
+Настройки прокси:
 
-Реализована работа с БД Postgres.
+    docker-compose.yml
 
-запуск с параметрами БД:
-Book.exe -s localhost -p 5432 -d postgres -u dbuser -pass dbpassword.
+        HTTP_PROXY: "http://user:password@proxy:port"
 
-Призапуске в БД создается таблица Phonebook и выполняется загрузка данных.
 
-Сервис стартует на порту 8080.
+Поиск телефонного кода по имени страны:
+
+curl <ip-container>:8080/code/<Countryname>
+
+Загрузка\обновление данных в БД о странах:
+
+curl -X POST <ip-container>:8080/reload
+
+
+Просмотр логов:
+
+docker logs -f phonebook_book_1
+
+
+Запуск тестов:
+
+go test -v server_test.go 

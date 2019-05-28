@@ -6,3 +6,7 @@ type PhoneEntity struct {
 	PhoneCode string
 	CountryCode string
 }
+
+type ResponseCode struct {
+	PhoneCode string
+}
