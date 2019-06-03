@@ -36,7 +36,7 @@ func main() {
 	}
 
 
-	dsn := fmt.Sprintf("postgres://%s:%s@localhost/%s?sslmode=disable",cfg.PostgresUser, cfg.PostgresPassword , cfg.PostgresDB)
+	dsn := fmt.Sprintf("postgres://%s:%s@postgres/%s?sslmode=disable",cfg.PostgresUser, cfg.PostgresPassword , cfg.PostgresDB)
 	postgresrepo, err:=db.NewPostgresrepo(&dsn)
 	if err !=nil  {
 		logger.Error("Error DB. Please check your connect for DB",err,dsn)
@@ -60,12 +60,14 @@ func main() {
 	defer db.Close()
 
 	logger.Info("Connect to DB ",cfg.PostgresDB, ", user " , cfg.PostgresUser)
+
 	data.SetClient(cfg.ProxyUrl)
 	logger.Debug("Set proxy:", cfg.ProxyUrl)
-	handlersT := handlers.NewHandlerT()
-	rT := mux.NewRouter()
-	rT.HandleFunc("/reload", handlersT.Reload).Methods("POST")
-	rT.HandleFunc("/code/{country}", handlersT.SelectCountry).Methods("GET")
+
+	handlers := handlers.NewHandler()
+	r := mux.NewRouter()
+	r.HandleFunc("/reload", handlers.Reload).Methods("POST")
+	r.HandleFunc("/code/{country}", handlers.SelectCountry).Methods("GET")
 	logger.Info("starting server at :8080")
-	http.ListenAndServe(":8080", rT)
+	http.ListenAndServe(":8080", r)
 }

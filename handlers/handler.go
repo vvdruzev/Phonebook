@@ -7,19 +7,20 @@ import (
 	"Phonebook/util"
 	"github.com/gorilla/mux"
 	"Phonebook/logger"
+	"github.com/sirupsen/logrus"
 )
 
-type HandlerT struct {
+type Handler struct {
 }
 
-func NewHandlerT() *HandlerT  {
-	return &HandlerT{
+func NewHandler() *Handler  {
+	return &Handler{
 	}
 }
 
-func (h HandlerT) Reload (w http.ResponseWriter, r *http.Request) {
+func (h Handler) Reload (w http.ResponseWriter, r *http.Request) {
 	datarepo := data.NewDataRepo()
-	logger.Info("Reload data")
+	logger.WithFields(logrus.Fields{"method":r.Method,}).Info("Reload data")
 	err := datarepo.GetCountryName()
 	if err !=nil  {
 		logger.Error("Source unreachable ",err)
@@ -35,11 +36,13 @@ func (h HandlerT) Reload (w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h HandlerT) SelectCountry(w http.ResponseWriter, r *http.Request) {
+func (h Handler) SelectCountry(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	country := vars["country"]
-	logger.Info("Select Country ",country)
+	logger.WithFields(logrus.Fields{"method":r.Method,}).Info("Select Country ",country)
+
 	rows, err :=db.Select(country)
+
 	if err != nil {
 		logger.Error(err)
 		util.ResponseError(w,http.StatusNotFound,"404 page not found")

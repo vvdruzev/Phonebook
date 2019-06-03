@@ -5,19 +5,20 @@ import (
 )
 
 func ResponseOk(w http.ResponseWriter, body interface{}) {
+	b,_:= json.Marshal(body)
+
 	w.WriteHeader(http.StatusOK)
 	w.Header().Set("Content-Type", "application/json")
-
-	json.NewEncoder(w).Encode(body)
+	w.Write(b)
 }
 
 func ResponseError(w http.ResponseWriter, code int, message string) {
-	w.WriteHeader(code)
-	w.Header().Set("Content-Type", "application/json")
-
 	body := map[string]string{
 		"error": message,
 	}
-	json.NewEncoder(w).Encode(body)
+	b,_:= json.Marshal(body)
 
+	w.WriteHeader(code)
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(b)
 }

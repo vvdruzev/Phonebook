@@ -14,17 +14,14 @@ sudo docker-compose up -d --build
 
 Поиск телефонного кода по имени страны:
 
-curl "ip-container":8080/code/"Countryname"
+curl <ip-container>:8080/code/<Countryname>
 
 Загрузка\обновление данных в БД о странах:
 
-curl -X POST "ip-container":8080/reload
+curl -X POST <ip-container>:8080/reload
 
 
-Просмотр логов:
+Просмотр логов: docker logs -f phonebook_book_1
 
-docker logs -f phonebook_book_1
 
-Запуск тестов:
-
-go test -v server_test.go 
+Запуск тестов: go test -v
