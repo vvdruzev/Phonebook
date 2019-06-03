@@ -76,11 +76,5 @@ func (d Postgresrepo) Select (country string ) (schema.ResponseCode,error) {
 	rows:= d.Db.QueryRow(sqlStr, strings.ToUpper(country))
 	p := schema.ResponseCode{}
 	err := rows.Scan(&p.PhoneCode)
-	if err == sql.ErrNoRows {
-		return p, &dbError{method: "Not found", Err: err}
-	} else if err != nil {
-		return 	p, &dbError{method: sqlStr, Err: err}
-	}
-
-	return p,nil
+	return p,err
 }

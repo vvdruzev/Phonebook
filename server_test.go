@@ -3,8 +3,6 @@ package main
 import (
 	"Phonebook/data"
 	"Phonebook/handlers"
-	"database/sql"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -14,10 +12,11 @@ import (
 	"Phonebook/logger"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
+	"encoding/json"
 )
 
 type PostgresrepoTest struct {
-	DB *sql.DB
+
 }
 
 func (d PostgresrepoTest) Select (country string ) (schema.ResponseCode,error) {
@@ -43,13 +42,11 @@ func (d PostgresrepoTest) Insert(repo data.DataRepo) error {
 func (d PostgresrepoTest) Create() error {
 	return nil
 }
-func (d PostgresrepoTest) Close()  {
 
-}
+func (d PostgresrepoTest) Close()  {}
 
 func NewPostgresrepoTest() *PostgresrepoTest {
-	return &PostgresrepoTest{
-	}
+	return &PostgresrepoTest{}
 }
 
 type TestCase struct {
@@ -63,41 +60,30 @@ type SearchResponse struct {
 	response string
 }
 
-func TestSelectCountry(t *testing.T) {
+func checkResponseCode(t *testing.T, expected, actual int) {
+	if expected != actual {
+		t.Errorf("handler returned wrong status code: got %d  want %d\n", actual, expected)
+	}
+}
+
+func TestNotFoundCountry(t *testing.T) {
 	logger.NewLogger()
 	item := []TestCase{
 		{
-		countryName: "jamaica",
-		Result: SearchResponse{
-			status:   200,
-			response: "{\"PhoneCode\":\"+1-876\"}\n",
-		},
-	},{
-		countryName:"jamaiCa",
-		Result: SearchResponse{
-			status:   200,
-			response: "{\"PhoneCode\":\"+1-876\"}\n",
-		},
+			countryName: "Jama",
+			Result: SearchResponse{
+				status:   404,
+				response: "404 page not found",
+			},
 
-	},
-	{
-		countryName: "Jama",
-		Result: SearchResponse{
-			status:   404,
-			response: "{\"error\":\"404 page not found\"}\n",
 		},
-
-	},
-
 	}
+
 	postgresrepoTest := NewPostgresrepoTest()
-	h := handlers.NewHandlerT()
+	h := handlers.NewHandler()
 	db.SetRepository(postgresrepoTest)
 
 	for _,val := range item {
-
-		rr := httptest.NewRecorder()
-		fmt.Println(val)
 
 		req, err := http.NewRequest("GET", "/code/", nil)
 		if err != nil {
@@ -109,18 +95,71 @@ func TestSelectCountry(t *testing.T) {
 		req = mux.SetURLVars(req,vars)
 		handler := http.HandlerFunc(h.SelectCountry)
 
+		rr := httptest.NewRecorder()
 		handler.ServeHTTP(rr, req)
 
-		if status := rr.Code; status != val.Result.status {
-			t.Errorf("handler returned wrong status code: got %v want %v",
-				status, val.Result.status)
+		checkResponseCode(t, http.StatusNotFound, rr.Code)
+
+		expected := val.Result.response
+		var m map[string]string
+		json.Unmarshal(rr.Body.Bytes(), &m)
+
+		if m["error"] != expected {
+			t.Errorf("handler returned unexpected body: got %v want %v",
+				m["error"], expected)
 		}
+	}
+}
+
+
+func TestFoundCountry(t *testing.T) {
+	logger.NewLogger()
+	item := []TestCase{
+		{
+			countryName: "jamaica",
+			Result: SearchResponse{
+				status:   http.StatusOK,
+				response: "+1-876",
+			},
+		},{
+			countryName:"jamaiCa",
+			Result: SearchResponse{
+				status:   http.StatusOK,
+				response: "+1-876",
+			},
+
+		},
+	}
+
+	postgresrepoTest := NewPostgresrepoTest()
+	h := handlers.NewHandler()
+	db.SetRepository(postgresrepoTest)
+
+	for _,val := range item {
+
+		req, err := http.NewRequest("GET", "/code/", nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		vars := map[string]string{
+			"country": val.countryName,
+		}
+		req = mux.SetURLVars(req,vars)
+		handlerT := http.HandlerFunc(h.SelectCountry)
+		rr := httptest.NewRecorder()
+		handlerT.ServeHTTP(rr, req)
+
+		checkResponseCode(t, http.StatusOK, rr.Code)
 
 		expected := val.Result.response
 
-		if fmt.Sprintf(rr.Body.String()) != expected {
+		var m map[string]string
+		json.Unmarshal(rr.Body.Bytes(), &m)
+
+		if m["PhoneCode"] != expected {
 			t.Errorf("handler returned unexpected body: got %v want %v",
-				rr.Body.String(), expected)
+				m["Phonebook"], expected)
 		}
 	}
 }
