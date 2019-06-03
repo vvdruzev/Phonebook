@@ -72,7 +72,7 @@ func TestNotFoundCountry(t *testing.T) {
 		{
 			countryName: "Jama",
 			Result: SearchResponse{
-				status:   404,
+				status:   http.StatusNotFound,
 				response: "404 page not found",
 			},
 
